@@ -1,4 +1,4 @@
-# CovidProject
+# Covid-Data-Analysis-Project
 **Exploring COVID-19 Data: A Comprehensive Analysis**
 
 **Introduction:**
