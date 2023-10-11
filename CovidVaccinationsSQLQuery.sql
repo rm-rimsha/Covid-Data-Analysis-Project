@@ -17,6 +17,28 @@ Select Distinct d.country, v.total_vaccinations
 From CovidVaccination v JOIN CovidDeaths d ON v.country = d.country
 Where d.country = 'United Kingdom';
 
+
+--Shows the total number of vaccinations in the country
+Select Distinct TOP 25 d.country, v.total_vaccinations
+From CovidVaccination v JOIN CovidDeaths d ON v.country = d.country
+Order by v.TOTAL_VACCINATIONS DESC;
+
+
+--Shows the percentage of people vaccinated in each contient using CTE
+With PercentagePeopleVaccinated as 
+	(Select d.continent as Continent,
+			p.population as Population,
+			v.persons_vaccinated_1plus_dose as PeopleVaccinated,
+			v.persons_vaccinated_1plus_dose/p.Population*100 as PercentagePeopleVaccinated
+	From CovidVaccination v 
+		JOIN CovidDeaths d on v.country = d.country 
+		JOIN Population p on d.country = p.Entity
+	Group by d.continent, p.Population,v.persons_vaccinated_1plus_dose)
+
+Select Continent, MAX(Population), MAX(PeopleVaccinated), MAX(PercentagePeopleVaccinated)
+From PercentagePeopleVaccinated
+group by continent;
+
 --Shows the percentage of people vaccinated in each country using CTE
 With PercentagePeopleVaccinated as 
 	(Select d.country as Country,
@@ -29,7 +51,9 @@ With PercentagePeopleVaccinated as
 	Group by d.country, p.Population, v.persons_vaccinated_1plus_dose)
 
 Select Country, Population, PeopleVaccinated, PercentagePeopleVaccinated 
-From PercentagePeopleVaccinated;
+From PercentagePeopleVaccinated
+Where PercentagePeopleVaccinated < 100
+Order by PercentagePeopleVaccinated DESC;
 
 --Shows the country with High Booster Dose
 Select country,
@@ -42,7 +66,14 @@ Order by HighBoosterDoseRate DESC;
 Select * From VaccinationMetaData;
 
 --Shows the vaccines in each country
-Select v.country as Country,
+Select Distinct v.country as Country,
 	   m.vaccine_name as VaccineName
-From CovidVaccination v JOIN VaccinationMetaData m on v.iso3 = m.iso3;
-	   
+From CovidVaccination v JOIN VaccinationMetaData m on v.iso3 = m.iso3
+Group by v.country, m.VACCINE_NAME;
+
+--Shows the vaccines used in the most countries
+Select TOP 5 m.vaccine_name as VaccineName,
+	   Count(m.vaccine_name) as NumberOfCountries
+From CovidVaccination v JOIN VaccinationMetaData m on v.iso3 = m.iso3
+Group by m.VACCINE_NAME
+Order by count(m.vaccine_name) Desc;
