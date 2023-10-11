@@ -9,7 +9,7 @@ Order by country, Date_reported;
 -- GLOBAL NUMBERS --
 
 -- Shows the total cases and total deaths reported 
-Select SUM(new_cases) as TotalCases, SUM(new_deaths) as TotalDeaths
+Select SUM(new_cases) as TotalCases, SUM(new_deaths) as TotalDeaths, SUM(new_deaths)/SUM(new_cases)*100 as DeathPercentage
 From CovidDeaths;
 
 -- Shows the total cases and total deaths reported each year
@@ -19,16 +19,14 @@ Group by Year(date_reported)
 Order by Year(date_reported);
 
 -- Shows the percentage of people died out of the people diagnosed with covid over the years since 2020
-Select Year(Date_reported) as Year,
-	Max(Cumulative_cases) as TotalCases, 
-	Max(Cumulative_deaths) as TotalDeaths,
-	CASE
-		When Max(Cumulative_cases) = 0 THEN 0
-		ELSE (Max(Cumulative_deaths)/ (NULLIF(Max(Cumulative_cases),0))*100)
+Select Year(date_reported) as Year, SUM(Convert(bigint,new_cases)) as TotalCases, SUM(Convert(bigint,new_deaths)) as TotalDeaths,
+CASE
+		When SUM(new_cases) = 0 THEN 0
+		ELSE (SUM(new_deaths)/ (NULLIF(SUM(new_cases),0))*100)
 	END AS DeathPercentage
 From CovidDeaths
 Group by Year(date_reported)
-Order by DeathPercentage DESC;
+Order by Year(date_reported);
 
 --Shows the percentage of people died out of the people diagnosed with covid in each country 
 --Analysis of this gives better overview of the death percentages over the years 2020-2023
@@ -75,10 +73,10 @@ Order by c.Country;
 -- CONTINENTS -- 
 
 --Shows the total cases and total deaths reported in each continent
-Select continent, SUM(new_cases) as TotalCases, SUM(new_deaths) as TotalDeaths
+Select continent, SUM(new_cases) as TotalCases, SUM(new_deaths) as TotalDeaths, SUM(new_deaths)/SUM(new_cases)*100 as DeathPercentage
 From CovidDeaths
 Group by continent
-Order by continent;
+Order by TotalDeaths DESC;
 
 -- Shows the probability of people contracting covid, dying due to covid per population in each continent
 Select c.continent, 
@@ -116,6 +114,7 @@ From CovidDeaths c JOIN Population p ON c.Country = p.Entity
 Where c.country = 'Pakistan'
 Order by location, date;
 
+
 --Shows the percentage of population died in this country
 Select c.country as Location,
 	c.Date_reported as Date,
@@ -133,3 +132,16 @@ Select country as Country,
 	   SUM(new_cases) OVER (Partition by country order by country, date_reported) as TotalCases
 From CovidDeaths
 Order by country, Date_reported;
+
+-- Shows the top 25 countries with the highest percentage of population infected
+Select TOP 25 c.country, 
+	   MAX(c.Cumulative_cases) as HighestInfectionRate, 
+	   MAX(c.Cumulative_deaths) as HighestDeathCount, 
+	   CASE
+		When SUM(c.new_cases) = 0 THEN 0
+		ELSE (SUM(c.new_deaths)/ (NULLIF(SUM(c.new_cases),0))*100)
+	END AS DeathPercentage,
+	   MAX((c.Cumulative_cases/p.population))*100 as PercentagePopulationInfected
+From CovidDeaths c JOIN Population p ON c.Continent = p.Entity
+Group by c.country
+Order by PercentagePopulationInfected Desc;
