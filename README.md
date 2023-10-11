@@ -16,3 +16,6 @@ The data was imported into SQL Server using SQL Server Integration Services(SSIS
 
 **Data Exploration in SQL:**
 Conducted an in-depth data exploration using SQL queries. Refer to the files ‘CovidDeathsSQLQuery’ and ‘CovidVaccinationsSQLQuery’  for the detailed SQL Queries.
+
+**Data Visualization:**
+Created a dashboard visualizing the data analysis in tableau. 
