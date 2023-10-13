@@ -19,3 +19,5 @@ Conducted an in-depth data exploration using SQL queries. Refer to the files ‘
 
 **Data Visualization:**
 Created a dashboard visualizing the data analysis in tableau. 
+
+https://public.tableau.com/views/CovidDashboard_16970325576040/Dashboard1?:language=en-US&:display_count=n&:origin=viz_share_link
